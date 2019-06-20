@@ -3,8 +3,6 @@ const log = logger (module);
 import getHistogram from './query/histogram';
 
 
-
-
 async function printHistogram () {
 	const rows = await getHistogram ('https://www.amazon.de', 'first_contentful_paint', .01);
 	rows.forEach (row => {
@@ -16,4 +14,3 @@ async function printHistogram () {
 }
 
 printHistogram ();
-
