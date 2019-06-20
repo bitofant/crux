@@ -1,0 +1,26 @@
+{
+	"$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/tslint.json",
+	"defaultSeverity": "warning",
+	"extends": [
+		"tslint:recommended"
+	],
+	"linterOptions": {
+		"exclude": [
+			"node_modules/**"
+		]
+	},
+	"rules": {
+		"quotemark": [true, "single"],
+		"indent": [true, "tabs", 2],
+		"interface-name": false,
+		"ordered-imports": false,
+		"object-literal-sort-keys": false,
+		"no-consecutive-blank-lines": false,
+		"trailing-comma": false,
+    "space-before-function-paren": [ true, "always" ],
+    "no-console": false,
+		"curly": false,
+		"no-namespace": false,
+		"arrow-parens": false
+	}
+}
