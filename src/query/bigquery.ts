@@ -2,6 +2,7 @@ import logger from 'standalone-logger';
 const log = logger (module);
 import BigQuery = require ('@google-cloud/bigquery');
 import { readFileSync } from 'fs';
+import { getCached, setCache } from './query-cache';
 
 const projectId = JSON.parse (readFileSync ('credentials.json', 'utf8')).project_id;
 
@@ -11,7 +12,14 @@ const client = new BigQuery.BigQuery ({
 });
 
 async function execQuery (query: string) {
+	const cachedResult = getCached (query);
+	if (cachedResult !== null) {
+		log ('using cached result...');
+		return cachedResult;
+	}
+	log ('cache miss...');
 	const result = await client.query (query);
+	setCache (query, result);
 	return result;
 }
 
@@ -68,6 +76,7 @@ class CruxQuery {
 
 }
 
+export { execQuery };
 export default CruxQuery;
 
 // async function getRows () {
