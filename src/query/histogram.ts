@@ -3,8 +3,14 @@ import { execQuery } from './bigquery';
 const log = logger (module);
 
 
+/**
+ * 
+ * @param website url of website to get information on
+ * @param event the chrome user experience report event
+ * @param trim optional; removes buckets from the back until at most `trim` percent of visitors are removed
+ */
 async function getHistogram (website: string, event:
-		'first_paint'|'first_contentful_paint'|'dom_content_loaded'|'onload') {
+		'first_paint'|'first_contentful_paint'|'dom_content_loaded'|'onload', trim?: number) {
 	const [rows] = await execQuery (`
 		#standardSQL
 		SELECT
@@ -18,7 +24,15 @@ async function getHistogram (website: string, event:
 		GROUP BY
 				bin.start
 		ORDER BY
-				bin.start`);
+				bin.start`) as Array<Array<{start:number,density:number}>>;
+	if (trim && trim > 0) {
+		let accumulated = 0;
+		while (true) {
+			accumulated += rows[rows.length - 1].density;
+			if (accumulated > trim) break;
+			rows.pop ();
+		}
+	}
 	return rows as Array<{ start: number, density: number }>;
 }
 
