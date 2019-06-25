@@ -32,6 +32,7 @@ function setCache (key: string, obj: any) {
 		clearTimeout (writeTimer);
 	}
 	writeTimer = setTimeout (() => {
+		writeTimer = null;
 		writeFile (CACHE_FILE, JSON.stringify (cache, null, '\t'), 'utf8', err => {
 			log ('cache file ' + (err ? 'not' : 'successfully') + ' updated');
 			if (err) log (err);
