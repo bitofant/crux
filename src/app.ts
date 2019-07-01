@@ -42,7 +42,7 @@ async function getCompetitors (file:string, competitors: Website[]) {
 	.then (results => {
 		let csv = 'Time,' + competitors.map (comp => comp.name).join (',');
 		multiTrim (.01, ...results);
-		const highestBucket: number = Math.max (...results.map (result => result[result.length - 1].start));
+		const highestBucket: number = Math.max (...results.map (result => (result.length > 0 ? result[result.length - 1].start : 0)));
 		for (let i = 0; i <= highestBucket; i += 100) {
 			let densities: number[] = results.map (result => {
 				const item = result.find (fnd => fnd.start === i);
@@ -53,6 +53,34 @@ async function getCompetitors (file:string, competitors: Website[]) {
 		writeFile (__dirname + '/../data/' + file, csv, 'utf8', err => {
 			if (err) throw err;
 			log (`written ux report for ${competitors.length} competitors to "${file}"`);
+		});
+		csv = 'Competitor,Amount,Percentage\n'
+		csv += results.map ((res,j) => {
+				return {
+					results: res,
+					name: competitors[j].name
+				};
+			})
+			.filter (r => r.results.length > 0)
+			.map (r => {
+				let sum = 0;
+				for (let i = 0; i < 100; i++) {
+					if (r.results[i].start >= 1000) break;
+					sum += r.results[i].density;
+				}
+				return {
+					name: r.name,
+					sum
+				};
+			})
+			.sort ((a, b) => {
+				return a.sum - b.sum;
+			})
+			.map (r => r.name + ',' + (1 - r.sum) + ',' + (Math.round ((1 - r.sum) * 1000) / 10))
+			.join ('\n');
+		writeFile (__dirname + '/../data/' + file.split ('.csv').join ('-more1s.csv'), csv, 'utf8', err => {
+			if (err) throw err;
+			log ('..added percentages of users who need more than 1s');
 		});
 	})
 	.catch (err => {
@@ -145,3 +173,4 @@ async function getCompetitorDevices (file: string, competitors: Website[]) {
 // getCompetitorAverage ('competitors-avg.csv', competitors);
 getCompetitorTrends ('competitor-trends.csv', 6, competitors);
 // getCompetitorDevices ('competitor-devices.csv', competitors);
+

@@ -21,13 +21,23 @@ async function getHistogram (website: string, event:
 				UNNEST(${event}.histogram.bin) AS bin
 		WHERE
 				origin = '${website}'
+				AND form_factor.name = 'phone'
+				AND effective_connection_type.name = '3G'
 		GROUP BY
 				bin.start
 		ORDER BY
 				bin.start`) as Array<Array<{start:number,density:number}>>;
+	let normalizing = 0;
+	rows.forEach (row => normalizing += row.density);
+	if (Math.round (normalizing * 100) !== 100) {
+		rows.forEach (row => {
+			row.density /= normalizing;
+		});
+		log ('normalized...');
+	}
 	if (trim && trim > 0) {
 		let accumulated = 0;
-		while (true) {
+		while (rows.length > 0) {
 			accumulated += rows[rows.length - 1].density;
 			if (accumulated > trim) break;
 			rows.pop ();
